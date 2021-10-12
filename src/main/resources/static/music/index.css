@@ -1,0 +1,242 @@
+body,div,p {
+	padding: 0;
+	margin: 0;
+	font-family: "寰蒋闆呴粦";
+}
+a {
+	text-decoration: none;
+	color: #666;
+}
+
+a:hover {
+	color: #DDD;
+}
+
+ul li{
+	list-style: none;
+}
+
+
+.wrapper {
+	
+}
+
+.bz_music {
+    width: 700px;
+    height: 380px;
+   	margin: 150px auto;
+   	box-shadow: 0 0 40px rgba(0,0,0,0.8);
+   	border-radius: 10px;
+   	background: #222;
+   	position: relative;
+}
+
+/*涓婂崐閮ㄥ垎*/
+
+.bz_music .music_info {
+	width: 500px;
+	height: 150px;
+	background: #000;
+	border-radius: 10px 10px 0 0;
+	position: relative;
+}
+
+.music_info .left_photo {
+	width: 100px;
+	height: 100px;
+	background-color: #fff;
+	border-radius: 50%;
+	position: absolute;
+	top: 15%;
+	left: 20px;	
+	overflow: hidden;
+	transition: all 1s;
+}
+
+.music_info .left_photo img {
+	width: 100px;
+	height: 100px;
+	transform:rotate(0deg);
+}
+
+.music_info .right_btn {
+	width: 30px;
+	height: 100px;
+	color: #666;
+	position: absolute;
+	top: 30%;
+	right: 20px;
+	
+}
+
+.music_info .right_btn .random {
+	display: block;
+	margin-bottom: 10px;
+}
+
+.music_info .right_btn .list {
+	display: block;
+	margin-bottom: 10px;
+	color: #DDD;
+}
+
+.music_info .right_btn .heart {
+	display: block;
+}
+
+.music_info .center_list {
+	width: 500px;
+	height: 150px;
+	position: relative;
+}
+
+.music_info .center_list ul {
+	position: absolute;
+    top: 35%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+/*.music_info .center_list ul li {
+	display: none;
+}
+
+.music_info .center_list ul .list_current {
+	display: block;
+}*/
+
+.music_info .center_list .list_title {
+	font-size: 30px;
+	display: block;
+	color: rgba(255,255,255,0.4);
+	margin-bottom: 10px;
+	text-align: center;
+	white-space: nowrap;
+}
+
+.music_info .center_list .list_singer {
+	display: block;
+	color: rgba(255,255,255,0.4);
+	text-align: center;
+}
+
+.music_info .process {
+	width: 100%;
+	height: 5px;
+	background: #000;
+	display: block;
+	position: absolute;
+	bottom: 0;
+	cursor: pointer;
+}
+
+.music_info .process .process_slide {
+	width: 0;
+	height: 5px;
+	display: block;
+	background: #ed553b;
+}
+
+
+/*涓嬪崐閮ㄥ垎*/
+
+.bz_music .music_controls {
+	width: 500px;
+	height: 210px;
+	color: #666;
+	text-align: center;
+	/*background: rgba(152, 46, 75, 0.6);*/
+}
+
+.music_controls .time {
+	width: 100%;
+	font-size: 52px;
+	padding: 15px 0 20px;
+}
+
+.music_controls .play_controls {
+	width: 100%;
+	font-size: 40px;
+	padding: 10px 0;
+}
+
+.music_controls .play_controls [class^="btn_"]{
+	padding: 0 50px;
+}
+
+.music_controls .volume {
+	width:300px;
+	height:2px;
+	background: #fff;
+	margin: 10px auto;
+	position: relative;
+	font-size: 20px;
+	cursor: pointer;
+}
+
+.music_controls  .volumeOff {
+	position: absolute;
+	top: 355px;
+	left: 80px;
+}
+
+.music_controls  .volumeUp {
+	position: absolute;
+	top: 355px;
+	right: 270px;
+}
+
+.music_controls .volume .btn_slide {
+	width: 50%;
+	height: 2px;
+	display: block;
+	background: #ed553b;
+}
+
+/*鎾斁鍒楄〃*/
+
+.bz_music .play_list_area {
+	width: 200px;
+	height: 360px;
+   	border-radius: 10px;
+   	background: #222;
+   	position: absolute;
+   	top: 0;
+   	right: 0;
+   	overflow-y: auto;
+}
+
+.bz_music .play_list {
+	padding: 0;
+	
+}
+
+.bz_music .play_list .current {
+	background: #ddd;
+}
+
+.bz_music .play_list li {
+	width: 100%;
+	height: 30px;
+	line-height: 30px;
+	display: block;
+	color: #ddd;
+	cursor: pointer;
+	font-size: 14px;
+} 
+
+.bz_music .play_list .current {
+	background: #333;
+}
+
+.bz_music .play_list .list_title {
+	margin-left: 10px;
+	float: left;
+}
+
+.bz_music .play_list .list_time {
+	margin-right: 10px;
+	float: right;
+}
