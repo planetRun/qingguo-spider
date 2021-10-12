@@ -104,7 +104,8 @@ public class ScoreController {
                 .openId("")
                 .addtime(new BigDecimal(System.currentTimeMillis()))
                 .password(password).build();
-        userService.register(user);
+//  todo 自行校验
+//        userService.register(user);
         request.getSession().setAttribute("user", user);
         return Maps.newHashMap();
     }

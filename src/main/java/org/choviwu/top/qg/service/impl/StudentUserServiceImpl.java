@@ -1,5 +1,6 @@
 package org.choviwu.top.qg.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.choviwu.top.qg.constant.RedisConstant;
 import org.choviwu.top.qg.ex.CrudException;
@@ -52,6 +53,7 @@ public class StudentUserServiceImpl extends ServiceImpl<StudentUserMapper, Stude
     @Override
     public boolean register(StudentUser user) {
         String userKey = MessageFormat.format(RedisConstant.SCHOOL_STUDENT_INFO,user.getSchoolId());
+
         save(user);
         //存在该用户
 //        if(redisRepository.hHasKey(userKey,user.getStudentId())){
