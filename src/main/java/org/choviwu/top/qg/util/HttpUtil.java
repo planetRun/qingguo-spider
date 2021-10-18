@@ -1,5 +1,7 @@
 package org.choviwu.top.qg.util;
 
+import org.springframework.http.MediaType;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
@@ -32,6 +34,17 @@ public class HttpUtil {
             throws Exception {
         String url = requestUrl + "?access_token=" + accessToken;
         return HttpUtil.postGeneralUrl(url, contentType, params, encoding);
+    }
+
+
+    public static String post(String requestUrl)
+            throws Exception {
+        return HttpUtil.postGeneralUrl(requestUrl, MediaType.APPLICATION_JSON_UTF8_VALUE,"", "UTF-8");
+    }
+
+    public static String post(String requestUrl, String encoding)
+            throws Exception {
+        return HttpUtil.postGeneralUrl(requestUrl, MediaType.APPLICATION_JSON_UTF8_VALUE,"", encoding);
     }
 
     public static String postGeneralUrl(String generalUrl, String contentType, String params, String encoding)

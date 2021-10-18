@@ -37,7 +37,7 @@ public class CourseScore implements Serializable {
 
     private String natureRead;
 
-    private Double score;
+    private String score;
 
     private BigDecimal addtime;
 

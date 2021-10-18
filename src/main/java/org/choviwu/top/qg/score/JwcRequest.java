@@ -29,6 +29,11 @@ public class JwcRequest {
 
     static Map map;
 
+    static String[] xnxqTemplate = new String[] {
+            "学年第一学期",
+            "学年第二学期"
+    };
+
     static {
         map = Maps.newHashMap();
         map.put("typeName", "");
@@ -94,60 +99,9 @@ public class JwcRequest {
         return null;
     }
 
-//    public static String getScore(HttpCookie cookies, String xnxq, String xn) {
-//        String xq = xnxq.substring(xnxq.length() - 1);
-//        HttpResponse response = HttpUtil.createPost("http://www.xacxxy.com:88/jwweb/xscj/Stu_MyScore_rpt.aspx")
-//                .header("Accept", "image/webp,image/apng,image/*,*/*;q=0.8")
-//                .header("Content-Type", "application/x-www-form-urlencoded")
-//                .header("Host", "www.xacxxy.com:88")
-//                .header("Referer", "http://www.xacxxy.com:88/jwweb/xscj/Stu_MyScore.aspx")
-//                .header("Upgrade-Insecure-Requests", "1")
-//                .header("User-Agent", Constant.USER_AGENT)
-//                .header("Cookie", cookies.toString())
-//                .cookie(cookies.toString())
-//                .form("sel_xn", xn).form("sel_xq", xq).form("SJ", "1")
-//                .form("SelXNXQ", Integer.valueOf(xq) + 1)
-//                .form("zfx_flag", 0).form("zxf", 0).form("btn_search", "")
-//                .execute();
-//        System.out.println(response.body());
-//        String url = Jsoup.parse(response.body()).children().get(0).getElementsByTag("img").get(0).attr("src");
-//        response = HttpUtil.createGet("http://www.xacxxy.com:88/jwweb/xscj/"+url)
-//                .header("Host", "www.xacxxy.com:88")
-//                .header("Referer", "http://www.xacxxy.com:88/jwweb/xscj/Stu_MyScore_rpt.aspx")
-//                .header("Upgrade-Insecure-Requests", "1")
-//                .header("User-Agent", Constant.USER_AGENT)
-//                .header("Cookie", cookies.toString())
-//                .cookie(cookies.toString())
-//                .execute();
-//        try {
-//            long time = System.currentTimeMillis();
-//            InputStream in = response.bodyStream();
-//            String path = ValidateImage.class.getResource("").getPath() + time + "_score.jpg";
-//            OutputStream out2 = new FileOutputStream(path);
-//
-//            byte b[] = new byte[1024 * 8];
-//            int len = 0;
-//            while ((len = in.read(b)) != -1) {
-//                out2.write(b, 0, len);
-//            }
-//            File file = new File(path);
-//            if (file.length() < 10000) {
-//                return "";
-//            }
-//            Map map = QiniuUtils.uploadFile(file);
-//
-//            file.delete();
-//            return (String) map.get("filePath");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return "";
-//    }
-
     public static List<CourseScore> getCourseScores(HttpCookie cookies, String xnxq, String xn) {
         List<CourseScore> courseScores = Lists.newArrayList();
         try {
-            String xq = xnxq.substring(xnxq.length() - 1);
             HttpResponse response = HttpUtil.createPost(CommonLog.CACHE_MAP.get("score_url"))
                     .header("Accept", "image/webp,image/apng,image/*,*/*;q=0.8")
                     .header("Content-Type", "application/x-www-form-urlencoded")
@@ -157,18 +111,29 @@ public class JwcRequest {
                     .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36")
                     .header("Cookie", cookies.toString())
                     .cookie(cookies.toString())
-                    .form("sel_xn", xn).form("sel_xq", xq)
-                    .form("SelXNXQ", Integer.valueOf(xq) + 1)
+//                    .form("sel_xn", xn).form("sel_xq", xq)
+                    .form("SelXNXQ", 0)
                     .form("submit","")
                     .execute();
             System.out.println(response.body());
             Elements elements = Jsoup.parse(response.body()).children();
             Elements scores = elements.get(0).getElementById("ID_Table").getElementsByTag("tr");
+            String newXnxq = "";
             for (int i = 0; i < scores.size(); i++) {
                 if(i>=scores.size()-2){
                     return courseScores;
                 }
                 Elements childrens = scores.get(i).children();
+                xnxq = childrens.get(0).text();
+                int xq = 0;
+                for (int i1 = 0; i1 < xnxqTemplate.length; i1++) {
+                    if (xnxq.contains(xnxqTemplate[i1])) {
+                        xnxq = xnxq.replace(xnxqTemplate[i1], "");
+                        xq = i1;
+                        newXnxq = xnxq.split("-")[0] + xq;
+                    }
+                }
+
                 String course = childrens.get(1).text();
                 String score = childrens.last().text();
                 CourseScore courseScore = new CourseScore();
@@ -177,9 +142,9 @@ public class JwcRequest {
                         .setCourseName(course)
                         .setCourseType(childrens.get(3).text())
                         .setNatureRead(childrens.get(5).text())
-                        .setScore(Double.valueOf(score))
+                        .setScore(score)
                         .setTestType(childrens.get(4).text())
-                        .setXnxq(xnxq);
+                        .setXnxq(newXnxq);
                 courseScores.add(courseScore);
             }
             return courseScores;

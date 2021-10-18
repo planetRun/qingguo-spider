@@ -1,9 +1,13 @@
 package org.choviwu.top.qg.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.choviwu.top.qg.constant.RedisConstant;
 import org.choviwu.top.qg.entity.CourseScore;
+import org.choviwu.top.qg.entity.CourseScoreDTO;
 import org.choviwu.top.qg.entity.StudentScore;
 import org.choviwu.top.qg.entity.StudentUser;
 import org.choviwu.top.qg.ex.CrudException;
@@ -14,12 +18,15 @@ import org.choviwu.top.qg.redis.RedisRepository;
 import org.choviwu.top.qg.score.JwcRequest;
 import org.choviwu.top.qg.service.CourseScoreService;
 import org.choviwu.top.qg.service.StudentScoreService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -102,7 +109,7 @@ public class StudentScoreServiceImpl extends ServiceImpl<StudentScoreMapper, Stu
      * @return
      */
     @Override
-    public List getCourseScoreSchool( String studentId,  String password,Integer school,
+    public List<CourseScore> getCourseScoreSchool( String studentId,  String password,Integer school,
                                       String xqxn,  String xn) {
         List<CourseScore> list = JwcRequest.getCourseScores(JwcRequest.login(studentId, password,school.toString()), xqxn, xn);
         if (list.isEmpty()) {
@@ -125,9 +132,59 @@ public class StudentScoreServiceImpl extends ServiceImpl<StudentScoreMapper, Stu
 //                redisRepository.hset(format,c.getCourseName(),c);
 //            }
         });
+        LambdaQueryWrapper<CourseScore> wrapper = Wrappers.lambdaQuery();
+        wrapper.eq(CourseScore::getUid, uid);
+        List<CourseScore> courseScores = courseScoreService.getBaseMapper().selectList(wrapper);
+        for (CourseScore courseScore : list) {
+            for (CourseScore score : courseScores) {
+                if (courseScore.getCourseName()
+                        .equals(score.getCourseName())) {
+                    Integer id = score.getId();
+                    courseScore.setId(id);
+                }
+            }
+        }
+        courseScoreService.asynUpdate(list);
 
-
+        list.forEach(c -> {
+            String courseName = c.getCourseName();
+            c.setCourseName(courseName.substring(courseName.indexOf("]") + 1));
+        });
         return list;
+    }
+
+    @Override
+    public List<CourseScoreDTO>  getCourseScore(String openId) {
+        LambdaUpdateWrapper<StudentUser> wrapper = Wrappers.lambdaUpdate();
+        wrapper.eq(StudentUser::getOpenId, openId);
+        StudentUser studentUser = studentUserMapper.selectOne(wrapper);
+        if (studentUser!= null) {
+
+            List<CourseScore> courseScoreSchool = getCourseScoreSchool(studentUser.getStudentId(), studentUser.getPassword(),
+                    studentUser.getSchoolId(), "", "");
+            int year = LocalDate.now().getYear();
+            List<String> years = new ArrayList<>();
+            for (int i = 4; i > 0;i--) {
+                for (int j = 0; j < 2; j++) {
+                    years.add(year - i + "" + j);
+                }
+            }
+
+
+            Map<String, List<CourseScore>> collect =
+                    courseScoreSchool.stream().collect(Collectors.groupingBy(CourseScore::getXnxq));
+            TreeMap<String, List<CourseScore>> treeMap = new TreeMap<>((o1, o2) -> o1.compareTo(o2));
+            treeMap.putAll(collect);
+            List<CourseScoreDTO> list = new ArrayList<>();
+            treeMap.forEach((k,v) -> {
+                CourseScoreDTO courseScoreDTO = new CourseScoreDTO();
+                courseScoreDTO.setKey(k);
+                courseScoreDTO.setList(v);
+                list.add(courseScoreDTO);
+            });
+            return list;
+        }
+        return new ArrayList<>();
     }
 
 

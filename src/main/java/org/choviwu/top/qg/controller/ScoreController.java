@@ -57,15 +57,10 @@ public class ScoreController {
      * 获取分数接口
      */
     @ResponseBody
-    @RequestMapping(value = "/getScore")
-    public Object getScore2(@RequestParam String xqxn,
-                            @RequestParam String xn) throws IOException {
-        StudentUser user = (StudentUser) request.getSession().getAttribute("user");
-        if (user == null) {
-            throw new CrudException(ExceptionEnum.sys_error);
-        }
-        xqxn = xn + xqxn;
-        return studentScoreService.getCourseScoreSchool(user.getStudentId(), user.getPassword(),user.getSchoolId(), xqxn, xn);
+        @RequestMapping(value = "/getScore")
+    public Object getScore2(@RequestParam String openId) throws IOException {
+
+        return studentScoreService.getCourseScore(openId);
     }
 
     /**

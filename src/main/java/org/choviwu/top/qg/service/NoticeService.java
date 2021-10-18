@@ -1,7 +1,8 @@
 package org.choviwu.top.qg.service;
 
-import org.choviwu.top.qg.entity.CourseScore;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.choviwu.top.qg.entity.CourseScore;
+import org.choviwu.top.qg.entity.Notice;
 
 import java.util.List;
 
@@ -13,7 +14,6 @@ import java.util.List;
  * @author 奕仁
  * @since 2020-02-25
  */
-public interface CourseScoreService extends IService<CourseScore> {
+public interface NoticeService extends IService<Notice> {
 
-    void asynUpdate(List<CourseScore> list);
 }

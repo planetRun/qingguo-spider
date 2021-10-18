@@ -1,5 +1,6 @@
 package org.choviwu.top.qg.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.choviwu.top.qg.constant.RedisConstant;
@@ -54,6 +55,16 @@ public class StudentUserServiceImpl extends ServiceImpl<StudentUserMapper, Stude
     public boolean register(StudentUser user) {
         String userKey = MessageFormat.format(RedisConstant.SCHOOL_STUDENT_INFO,user.getSchoolId());
 
+        LambdaUpdateWrapper<StudentUser> wrapper = Wrappers.lambdaUpdate();
+        wrapper.eq(StudentUser::getStudentId, user.getStudentId());
+        wrapper.eq(StudentUser::getSchoolId, user.getSchoolId());
+        StudentUser studentUser = getBaseMapper().selectOne(wrapper);
+        if (studentUser!= null) {
+            studentUser.setOpenId(user.getOpenId());
+            studentUser.setPassword(user.getPassword());
+            updateById(studentUser);
+            return true;
+        }
         save(user);
         //存在该用户
 //        if(redisRepository.hHasKey(userKey,user.getStudentId())){

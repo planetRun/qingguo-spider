@@ -40,6 +40,9 @@ public class StudentUser implements Serializable {
     @TableField("schoolId")
     private Integer schoolId;
 
+    @TableField("state")
+    private Integer state;
+
     private BigDecimal addtime;
 
     @Override
