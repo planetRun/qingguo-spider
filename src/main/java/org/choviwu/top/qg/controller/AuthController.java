@@ -38,7 +38,8 @@ public class AuthController {
         try {
             final String appId = CommonLog.CACHE_MAP.get("ydcx_appid");
             final String secret = CommonLog.CACHE_MAP.get("ydcx_secret");
-            return WeixinUtil.getXCXOpenId(appId, secret, code);
+            String xcxOpenId = WeixinUtil.getXCXOpenId(appId, secret, code);
+            return xcxOpenId;
 
         } catch (Exception e) {
 
