@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.choviwu.top.qg.entity.BindInfoDTO;
 import org.choviwu.top.qg.entity.StudentUser;
 import org.choviwu.top.qg.ex.CrudException;
+import org.choviwu.top.qg.score.CommonLog;
 import org.choviwu.top.qg.score.JwcRequest;
 import org.choviwu.top.qg.service.StudentUserService;
 import org.choviwu.top.qg.util.WeixinUtil;
@@ -35,7 +36,9 @@ public class AuthController {
             throw new RuntimeException("code不存在，请重新进入页面");
         }
         try {
-            return WeixinUtil.getXCXOpenId(WeixinUtil.appId, WeixinUtil.secret, code);
+            final String appId = CommonLog.CACHE_MAP.get("ydcx_appid");
+            final String secret = CommonLog.CACHE_MAP.get("ydcx_secret");
+            return WeixinUtil.getXCXOpenId(appId, secret, code);
 
         } catch (Exception e) {
 
@@ -49,20 +52,19 @@ public class AuthController {
         if (StringUtils.isEmpty(openId)) {
             throw new RuntimeException("openId不存在，请重新进入页面");
         }
-        boolean flag = false;
         try {
             LambdaQueryWrapper<StudentUser> query = Wrappers.lambdaQuery();
             query.eq(StudentUser::getOpenId, openId);
 
             StudentUser studentUser = studentUserService.getBaseMapper().selectOne(query);
-            if (studentUser != null) {
+            if (studentUser != null && studentUser.getState() != -1) {
                 return true;
             }
             return false;
         } catch (Exception e) {
 
         }
-        return flag;
+        return false;
     }
 
     @RequestMapping("/bind")

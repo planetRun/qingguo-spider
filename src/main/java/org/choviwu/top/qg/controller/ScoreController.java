@@ -1,12 +1,15 @@
 package org.choviwu.top.qg.controller;
 
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.RandomUtils;
 import org.choviwu.top.qg.entity.StudentUser;
 import org.choviwu.top.qg.ex.CrudException;
 import org.choviwu.top.qg.ex.ExceptionEnum;
 import org.choviwu.top.qg.score.JwcRequest;
 import org.choviwu.top.qg.service.StudentScoreService;
 import org.choviwu.top.qg.service.StudentUserService;
+import org.choviwu.top.qg.util.ProxyPoolUtils;
+import org.choviwu.top.qg.util.ProxyThreadLocal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -59,7 +62,7 @@ public class ScoreController {
     @ResponseBody
         @RequestMapping(value = "/getScore")
     public Object getScore2(@RequestParam String openId) throws IOException {
-
+//        ProxyThreadLocal.set(ProxyPoolUtils.proxies.get(RandomUtils.nextInt(0, ProxyPoolUtils.proxies.size()-1)));
         return studentScoreService.getCourseScore(openId);
     }
 

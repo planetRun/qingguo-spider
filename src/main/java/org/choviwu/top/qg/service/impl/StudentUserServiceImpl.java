@@ -62,6 +62,7 @@ public class StudentUserServiceImpl extends ServiceImpl<StudentUserMapper, Stude
         if (studentUser!= null) {
             studentUser.setOpenId(user.getOpenId());
             studentUser.setPassword(user.getPassword());
+            studentUser.setState(1);
             updateById(studentUser);
             return true;
         }

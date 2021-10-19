@@ -5,6 +5,7 @@ import cn.hutool.http.HttpUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.choviwu.top.qg.ex.CrudException;
+import org.choviwu.top.qg.util.ProxyThreadLocal;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -53,6 +54,7 @@ public class JwcRequest {
         String yzm = md5(md5(validate.toUpperCase()).substring(0, 30).toUpperCase() + school).substring(0, 30).toUpperCase();
         Map<String, String> viewState = getViewState();
         HttpResponse response = HttpUtil.createPost(CommonLog.CACHE_MAP.get("login_url")).form(map)
+                .setProxy(ProxyThreadLocal.get())
                 .form("dsdsdsdsdxcxdfgfg", xuehao)
                 .form("fgfggfdgtyuuyyuuckjg", yzm)
                 .form("__VIEWSTATE", viewState.get("__VIEWSTATE"))
@@ -81,19 +83,20 @@ public class JwcRequest {
         Map<String,String> map = new HashMap<>();
 
         try {
-
-            Document result = Jsoup.connect(CommonLog.CACHE_MAP.get("login_url")).userAgent(Constant.USER_AGENT)
+            final String res = HttpUtil.createGet(CommonLog.CACHE_MAP.get("login_url"))
+                    .header("user-agent", Constant.USER_AGENT)
                     .header("Accept-Encoding", "gzip, deflate")
-                    .method(Connection.Method.GET)
-                    .maxBodySize(0).followRedirects(false)
-                    .get();
+                    .setFollowRedirects(false)
+                    .setProxy(ProxyThreadLocal.get())
+                    .execute().body();
+            Document result = Jsoup.parse(res);
             Elements elements = result.getElementsByTag("input");
             String viewState = elements.get(0).attr("value");
             String __EVENTVALIDATION = elements.get(1).attr("value");
             map.put("__VIEWSTATE", viewState);
             map.put("__EVENTVALIDATION", __EVENTVALIDATION);
             return map;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -103,6 +106,7 @@ public class JwcRequest {
         List<CourseScore> courseScores = Lists.newArrayList();
         try {
             HttpResponse response = HttpUtil.createPost(CommonLog.CACHE_MAP.get("score_url"))
+                    .setProxy(ProxyThreadLocal.get())
                     .header("Accept", "image/webp,image/apng,image/*,*/*;q=0.8")
                     .header("Content-Type", "application/x-www-form-urlencoded")
                     .header("Host", ValidateImage.parseDomain(CommonLog.CACHE_MAP.get("score_url")))

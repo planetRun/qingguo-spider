@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import org.choviwu.top.qg.util.ProxyThreadLocal;
 
 
 /***
@@ -32,7 +33,7 @@ public class ValidateImage {
 //        http://www.xacxxy.com:88/
         String host = parseDomain(validateUrl);
         try {
-            HttpResponse response = HttpUtil.createGet(url)
+            HttpResponse response = HttpUtil.createGet(url).setProxy(ProxyThreadLocal.get())
                     .header("Accept", "image/webp,image/apng,image/*,*/*;q=0.8")
                     .header("Accept-Encoding", "gzip, deflate")
                     .header("Accept-Language", "zh-CN,zh;q=0.9")

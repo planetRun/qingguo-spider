@@ -9,6 +9,7 @@ import org.choviwu.top.qg.entity.Config;
 import org.choviwu.top.qg.mapper.ConfigMapper;
 import org.choviwu.top.qg.redis.RedisRepository;
 import org.choviwu.top.qg.score.CommonLog;
+import org.choviwu.top.qg.util.ProxyPoolUtils;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -22,6 +23,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.servlet.ServletContext;
@@ -43,6 +45,9 @@ public class Application implements ServletContextInitializer {
     @Autowired
     RedisRepository cached;
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
 
     public static void main(String[] args) throws InterruptedException {
 
@@ -52,8 +57,23 @@ public class Application implements ServletContextInitializer {
         configs.forEach(c->{
             CommonLog.CACHE_MAP.put(c.getParam(), c.getResult());
         });
+        ProxyPoolUtils.putProxy();
 
+    }
 
+    @Scheduled(cron = "2 2 0/2 * * ?")
+    public void task(){
+        ConfigMapper bean = applicationContext.getBean(ConfigMapper.class);
+        List<Config> configs = bean.selectList(Wrappers.lambdaQuery());
+        configs.forEach(c->{
+            CommonLog.CACHE_MAP.put(c.getParam(), c.getResult());
+        });
+    }
+
+    @Scheduled(cron = "1 0/3 * * * ?")
+    public void proxyPool(){
+        ProxyPoolUtils.proxies.clear();
+        ProxyPoolUtils.putProxy();
     }
 
 

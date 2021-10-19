@@ -1,10 +1,12 @@
 package org.choviwu.top.qg.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import java.util.concurrent.TimeUnit;
 import org.choviwu.top.qg.constant.RedisConstant;
 import org.choviwu.top.qg.entity.CourseScore;
 import org.choviwu.top.qg.entity.CourseScoreDTO;
@@ -20,6 +22,8 @@ import org.choviwu.top.qg.service.CourseScoreService;
 import org.choviwu.top.qg.service.StudentScoreService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -27,6 +31,7 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.util.CollectionUtils;
 
 /**
  * <p>
@@ -45,31 +50,13 @@ public class StudentScoreServiceImpl extends ServiceImpl<StudentScoreMapper, Stu
     private StudentUserMapper studentUserMapper;
     @Autowired
     private CourseScoreService courseScoreService;
-//    @Autowired
-//    private RedisRepository redisRepository;
+
+    @Autowired
+    private StringRedisTemplate redisRepository;
 
 
     @Override
     public String getStudentScore( String openId,  String xnxq,  String xn) {
-
-//        StudentUser studentUser = studentUserMapper.selectOne(new QueryWrapper<StudentUser>().eq("openId", openId));
-//        if (studentUser != null) {
-//            StudentScore studentScore = scoreMapper.selectOne(new QueryWrapper<StudentScore>().eq("uid", studentUser.getId()).eq("xnxq", xnxq)
-//                    .eq("xn", xn));
-//            if (studentScore != null) {
-//                return studentScore.getScoreImg();
-//            } else {
-//                String imageUrl = JwcRequest.getScore(JwcRequest.login(studentUser.getStudentId(), studentUser.getPassword(),studentUser.getSchoolId().toString()), xnxq, xn);
-//                studentScore = StudentScore.builder().scoreImg(imageUrl)
-//                        .addtime(new BigDecimal(System.currentTimeMillis()))
-//                        .uid(studentUser.getId())
-//                        .xn(Integer.valueOf(xn))
-//                        .xnxq(Integer.valueOf(xnxq))
-//                        .build();
-//                scoreMapper.insert(studentScore);
-//                return studentScore.getScoreImg();
-//            }
-//        }
         return null;
     }
 
@@ -159,7 +146,14 @@ public class StudentScoreServiceImpl extends ServiceImpl<StudentScoreMapper, Stu
         wrapper.eq(StudentUser::getOpenId, openId);
         StudentUser studentUser = studentUserMapper.selectOne(wrapper);
         if (studentUser!= null) {
-
+            final String key = "xacxxy:jwc:score:" + studentUser.getStudentId();
+            if (redisRepository.hasKey(key)) {
+                List<String> range = redisRepository.opsForList().range(key, 0, 999);
+                if (!CollectionUtils.isEmpty(range)) {
+                    final List<CourseScoreDTO> collect = range.stream().map(c -> JSON.parseObject(c, CourseScoreDTO.class)).collect(Collectors.toList());
+                    return collect;
+                }
+            }
             List<CourseScore> courseScoreSchool = getCourseScoreSchool(studentUser.getStudentId(), studentUser.getPassword(),
                     studentUser.getSchoolId(), "", "");
             int year = LocalDate.now().getYear();
@@ -182,9 +176,17 @@ public class StudentScoreServiceImpl extends ServiceImpl<StudentScoreMapper, Stu
                 courseScoreDTO.setList(v);
                 list.add(courseScoreDTO);
             });
+            writeCache(list, studentUser.getStudentId());
             return list;
         }
         return new ArrayList<>();
+    }
+
+    private void writeCache(List<CourseScoreDTO> list, String studentId) {
+        final String key = "xacxxy:jwc:score:" + studentId;
+        final List<String> jsonList = list.stream().map(JSON::toJSONString).collect(Collectors.toList());
+        redisRepository.opsForList().leftPushAll(key, jsonList);
+        redisRepository.expire(key, 5, TimeUnit.MINUTES);
     }
 
 

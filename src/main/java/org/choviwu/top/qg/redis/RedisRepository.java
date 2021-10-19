@@ -29,6 +29,9 @@ public class RedisRepository implements Cached{
     @Autowired
     private HashOperations hashOperations;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
 
     /**
      * 获取缓存
@@ -410,6 +413,18 @@ public class RedisRepository implements Cached{
     public boolean lSet(String key, Object value) {
         try {
             listOperations.rightPush(key, value);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     */
+    public boolean expire(String key, long time, TimeUnit timeUnit) {
+        try {
+            redisTemplate.expire(key, time, timeUnit);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
