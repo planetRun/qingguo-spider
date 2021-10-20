@@ -12,7 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
-@ControllerAdvice
+@ControllerAdvice(basePackages = "org.choviwu.top.qg.controller")
 @EnableWebMvc
 public class ExceptionAdvice {
 
