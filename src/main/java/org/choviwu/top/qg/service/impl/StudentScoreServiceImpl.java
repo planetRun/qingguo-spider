@@ -62,40 +62,21 @@ public class StudentScoreServiceImpl extends ServiceImpl<StudentScoreMapper, Stu
     @Override
     public List<CourseScore> getCourseScoreSchool( String studentId,  String password,Integer school,
                                       String xqxn,  String xn) {
-        List<CourseScore> list = JwcRequest.getCourseScores(JwcRequest.login(studentId, password,school.toString()), xqxn, xn);
-        if (list.isEmpty()) {
-            throw new CrudException(ExceptionEnum.user_score_not_public);
-        }
+
         StudentUser user = studentUserMapper.selectOne(new QueryWrapper<StudentUser>().eq("student_id", studentId));
         if (user == null) {
             user = StudentUser.builder().studentId(studentId).password(password).addtime(new BigDecimal(System.currentTimeMillis())).schoolId(school).build();
         }
         int uid = user.getId();
-        list.forEach(c -> c.setUid(uid));
 
-        list.forEach(c -> {
-            String courseName = c.getCourseName();
-            c.setCourseName(courseName.substring(courseName.indexOf("]") + 1));
-        });
         LambdaQueryWrapper<CourseScore> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(CourseScore::getUid, uid);
         List<CourseScore> courseScores = courseScoreService.getBaseMapper().selectList(wrapper);
-        for (CourseScore courseScore : list) {
-            for (CourseScore score : courseScores) {
-                if (courseScore.getCourseName()
-                        .equals(score.getCourseName())) {
-                    Integer id = score.getId();
-                    courseScore.setId(id);
-                }
-            }
+        for (CourseScore score : courseScores) {
+            String courseName = score.getCourseName();
+            score.setCourseName(courseName.substring(courseName.indexOf("]") + 1));
         }
-        courseScoreService.asynUpdate(list);
-
-        list.forEach(c -> {
-            String courseName = c.getCourseName();
-            c.setCourseName(courseName.substring(courseName.indexOf("]") + 1));
-        });
-        return list;
+        return courseScores;
     }
 
     @Override

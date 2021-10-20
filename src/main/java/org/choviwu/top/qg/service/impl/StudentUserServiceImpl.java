@@ -28,18 +28,11 @@ import java.text.MessageFormat;
 @Service
 public class StudentUserServiceImpl extends ServiceImpl<StudentUserMapper, StudentUser> implements StudentUserService {
 
-    //    @Autowired
-//    private StudentUserMapper userMapper;
     @Autowired
     private RedisRepository redisRepository;
 
     @Override
     public boolean bindAccount(String openId, String username, String password,String school) {
-        String userKey = MessageFormat.format(RedisConstant.SCHOOL_STUDENT_INFO,school);
-//        StudentUser studentUser = redisRepository.hget(userKey,username,StudentUser.class);
-//        if(studentUser!=null){
-//            throw new CrudException(ExceptionEnum.user_already_bind_account,studentUser.getStudentId());
-//        }
         //登录 成功
         JwcRequest.login(username,password,school);
         StudentUser user = StudentUser.builder().addtime(new BigDecimal(System.currentTimeMillis()))
@@ -47,14 +40,11 @@ public class StudentUserServiceImpl extends ServiceImpl<StudentUserMapper, Stude
                 .studentId(username)
                 .password(password)
                 .build();
-//        redisRepository.hset(userKey,user.getStudentId(),user);
         return true;
     }
 
     @Override
-    public boolean register(StudentUser user) {
-        String userKey = MessageFormat.format(RedisConstant.SCHOOL_STUDENT_INFO,user.getSchoolId());
-
+    public Integer register(StudentUser user) {
         LambdaUpdateWrapper<StudentUser> wrapper = Wrappers.lambdaUpdate();
         wrapper.eq(StudentUser::getStudentId, user.getStudentId());
         wrapper.eq(StudentUser::getSchoolId, user.getSchoolId());
@@ -64,15 +54,9 @@ public class StudentUserServiceImpl extends ServiceImpl<StudentUserMapper, Stude
             studentUser.setPassword(user.getPassword());
             studentUser.setState(1);
             updateById(studentUser);
-            return true;
+            return user.getId();
         }
         save(user);
-        //存在该用户
-//        if(redisRepository.hHasKey(userKey,user.getStudentId())){
-//            return false;
-//        }else{
-//            redisRepository.hset(userKey,user.getStudentId(),user);
-            return true;
-//        }
+        return user.getId();
     }
 }

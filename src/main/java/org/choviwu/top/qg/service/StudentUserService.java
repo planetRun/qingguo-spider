@@ -16,5 +16,5 @@ public interface StudentUserService extends IService<StudentUser> {
 
     boolean bindAccount(String openId, String username, String password,String school);
 
-    boolean register(StudentUser user);
+    Integer register(StudentUser user);
 }

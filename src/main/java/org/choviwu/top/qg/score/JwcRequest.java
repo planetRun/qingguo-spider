@@ -102,7 +102,7 @@ public class JwcRequest {
         return null;
     }
 
-    public static List<CourseScore> getCourseScores(HttpCookie cookies, String xnxq, String xn) {
+    public static List<CourseScore> getCourseScores(HttpCookie cookies) {
         List<CourseScore> courseScores = Lists.newArrayList();
         try {
             HttpResponse response = HttpUtil.createPost(CommonLog.CACHE_MAP.get("score_url"))
@@ -128,7 +128,7 @@ public class JwcRequest {
                     return courseScores;
                 }
                 Elements childrens = scores.get(i).children();
-                xnxq = childrens.get(0).text();
+                String xnxq = childrens.get(0).text();
                 int xq = 0;
                 for (int i1 = 0; i1 < xnxqTemplate.length; i1++) {
                     if (xnxq.contains(xnxqTemplate[i1])) {
