@@ -57,7 +57,7 @@ public class Application implements ServletContextInitializer {
         configs.forEach(c->{
             CommonLog.CACHE_MAP.put(c.getParam(), c.getResult());
         });
-        ProxyPoolUtils.putProxy();
+//        ProxyPoolUtils.putProxy();
 
     }
 
@@ -72,8 +72,8 @@ public class Application implements ServletContextInitializer {
 
     @Scheduled(cron = "1 0/3 * * * ?")
     public void proxyPool(){
-        ProxyPoolUtils.proxies.clear();
-        ProxyPoolUtils.putProxy();
+//        ProxyPoolUtils.proxies.clear();
+//        ProxyPoolUtils.putProxy();
     }
 
 

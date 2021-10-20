@@ -18,10 +18,6 @@ import java.util.Map;
  */
 public interface StudentScoreService extends IService<StudentScore> {
 
-    String getStudentScore( String openId, String xqxn, String xn);
-
-    List getCourseScores( String openId,  String xqxn, String xn);
-
     List getCourseScoreSchool( String studentId,String password,Integer school,  String xqxn, String xn);
 
     List<CourseScoreDTO>  getCourseScore(String openId);

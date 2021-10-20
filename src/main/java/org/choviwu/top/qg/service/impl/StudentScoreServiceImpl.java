@@ -54,42 +54,6 @@ public class StudentScoreServiceImpl extends ServiceImpl<StudentScoreMapper, Stu
     @Autowired
     private StringRedisTemplate redisRepository;
 
-
-    @Override
-    public String getStudentScore( String openId,  String xnxq,  String xn) {
-        return null;
-    }
-
-    @Override
-    public List<CourseScore> getCourseScores(String openId, String xnxq, String xn) {
-
-        StudentUser studentUser = studentUserMapper.selectOne(new QueryWrapper<StudentUser>().eq("openId", openId));
-        if (studentUser != null) {
-            List<CourseScore> courseScores = courseScoreService.list(new QueryWrapper<CourseScore>().eq("uid", studentUser.getId()).eq("xnxq", xnxq));
-            if (!courseScores.isEmpty()) {
-
-                courseScores.forEach(c -> {
-                    String courseName = c.getCourseName();
-                    c.setCourseName(courseName.substring(courseName.indexOf("]") + 1));
-                });
-                return courseScores;
-            } else {
-                List<CourseScore> list = JwcRequest.getCourseScores(JwcRequest.login(studentUser.getStudentId(), studentUser.getPassword(),studentUser.getSchoolId().toString()), xnxq, xn);
-                if (list.isEmpty()) {
-                    throw new CrudException(ExceptionEnum.user_score_not_public);
-                }
-                list.forEach(c -> c.setUid(studentUser.getId()));
-                courseScoreService.saveBatch(list);
-                list.forEach(c -> {
-                    String courseName = c.getCourseName();
-                    c.setCourseName(courseName.substring(courseName.indexOf("]") + 1));
-                });
-                return list;
-            }
-        }
-        return null;
-    }
-
     /**
      * @param xqxn  学期 20171
      * @param xn    学年 2017
@@ -105,19 +69,13 @@ public class StudentScoreServiceImpl extends ServiceImpl<StudentScoreMapper, Stu
         StudentUser user = studentUserMapper.selectOne(new QueryWrapper<StudentUser>().eq("student_id", studentId));
         if (user == null) {
             user = StudentUser.builder().studentId(studentId).password(password).addtime(new BigDecimal(System.currentTimeMillis())).schoolId(school).build();
-//            String userKey = MessageFormat.format(RedisConstant.SCHOOL_STUDENT_INFO,school);
-//            redisRepository.hset(userKey,studentId,user);
         }
         int uid = user.getId();
         list.forEach(c -> c.setUid(uid));
 
-        String format = MessageFormat.format(RedisConstant.SCHOOL_STUDENT_SCORE,school.toString(),studentId,xqxn);
         list.forEach(c -> {
             String courseName = c.getCourseName();
             c.setCourseName(courseName.substring(courseName.indexOf("]") + 1));
-//            if(!redisRepository.hHasKey(format,c.getCourseName())){
-//                redisRepository.hset(format,c.getCourseName(),c);
-//            }
         });
         LambdaQueryWrapper<CourseScore> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(CourseScore::getUid, uid);
@@ -167,7 +125,7 @@ public class StudentScoreServiceImpl extends ServiceImpl<StudentScoreMapper, Stu
 
             Map<String, List<CourseScore>> collect =
                     courseScoreSchool.stream().collect(Collectors.groupingBy(CourseScore::getXnxq));
-            TreeMap<String, List<CourseScore>> treeMap = new TreeMap<>((o1, o2) -> o1.compareTo(o2));
+            TreeMap<String, List<CourseScore>> treeMap = new TreeMap<>(String::compareTo);
             treeMap.putAll(collect);
             List<CourseScoreDTO> list = new ArrayList<>();
             treeMap.forEach((k,v) -> {

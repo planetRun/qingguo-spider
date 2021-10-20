@@ -16,6 +16,7 @@ import org.choviwu.top.qg.service.StudentUserService;
 import org.choviwu.top.qg.util.WeixinUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
@@ -75,9 +76,10 @@ public class AuthController {
         String userNo = bindInfoDTO.getUserNo();
         String password = bindInfoDTO.getPassword();
 
-        JwcRequest.login(userNo, password, "13683");
+        JwcRequest.login(userNo, password, bindInfoDTO.getSchoolId()+"");
         studentUserService.register(StudentUser.builder()
-                .schoolId(13683).studentId(bindInfoDTO.getUserNo())
+                .schoolId(bindInfoDTO.getSchoolId())
+                .studentId(bindInfoDTO.getUserNo())
                 .password(bindInfoDTO.getPassword()).state(1)
                 .openId(bindInfoDTO.getOpenId())
                 .build()
@@ -86,14 +88,14 @@ public class AuthController {
     }
 
     @RequestMapping("/unbind")
-    public boolean unbind(String openId) throws Exception {
+    public boolean unbind(String openId, @RequestParam(required = false, defaultValue = "13683") String schoolId) throws Exception {
         if (StringUtils.isEmpty(openId)) {
             throw new RuntimeException("openId不存在，请重新进入页面");
         }
 
         LambdaQueryWrapper<StudentUser> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(StudentUser::getOpenId, openId);
-        wrapper.eq(StudentUser::getSchoolId, "13683");
+        wrapper.eq(StudentUser::getSchoolId, schoolId);
         StudentUser studentUser = studentUserService.getBaseMapper().selectOne(wrapper);
         studentUser.setState(-1);
         studentUserService.getBaseMapper().updateById(studentUser);

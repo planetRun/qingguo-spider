@@ -13,6 +13,7 @@ public class BindInfoDTO implements Serializable {
 
     private String openId;
 
+    private Integer schoolId = 13683;
 
     private String type;
 
